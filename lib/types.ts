@@ -5,6 +5,8 @@ export type Email = {
   snippet: string;
   category?: string;
   priority?: number;
+  reasoning?: string;
+  action_required?: string;
   status: 'new' | 'classified' | 'in_progress' | 'done';
 };
 

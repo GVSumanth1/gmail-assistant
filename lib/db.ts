@@ -29,7 +29,7 @@ export function getAllEmails(): Email[] {
   return db.prepare(`
     SELECT 
       e.id, e.gmail_id, e.sender, e.subject, e.snippet,
-      c.category, c.priority, c.reasoning,
+      c.category, c.priority, c.reasoning, c.action_required,
       k.status
     FROM emails e
     LEFT JOIN classifications c ON e.id = c.email_id

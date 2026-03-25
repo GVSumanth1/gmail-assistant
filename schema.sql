@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS classifications (
   category TEXT NOT NULL,
   priority INTEGER CHECK(priority BETWEEN 1 AND 5),
   reasoning TEXT,
+  action_required TEXT,
   classified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (email_id) REFERENCES emails(id) ON DELETE CASCADE
 );
