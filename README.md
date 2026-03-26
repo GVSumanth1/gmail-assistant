@@ -448,23 +448,6 @@ node scripts/add-test-data.js
 
 Test emails include various categories and priorities to showcase the system.
 
-
----
-
-## 📝 Development Notes
-
-### Adding New Categories
-Edit `lib/types.ts` and update:
-1. Email type union
-2. n8n prompt
-3. CATEGORY_COLORS mapping
-
-### Modifying Card Layout
-Edit `app/page.tsx` EmailCard component - structure is in the first 100 lines.
-
-### Changing Status Workflow
-Edit `lib/types.ts` -> `STATUS_ORDER` constant and update column count in app.
-
 ---
 
 ## License
