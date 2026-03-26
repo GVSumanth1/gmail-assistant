@@ -12,84 +12,91 @@ const testEmails = [
     gmail_id: 'test_1_abc123',
     sender: 'john.doe@example.com',
     subject: 'Q4 Budget Review Meeting',
-    body: 'Hi, please review the attached Q4 budget proposal. Need approval by Friday.',
-    snippet: 'Hi, please review the attached Q4 budget proposal...',
-    status: 'new',
-    category: 'work',
+    text: 'Hi, please review the attached Q4 budget proposal. Need approval by Friday.',
+    status: 'to_do',
+    category: 'URGENT_DECISION',
     priority: 5,
+    reasoning: 'Contains budget approval request with tight deadline (Friday). Requires immediate executive decision.',
+    action_required: 'Approve Q4 budget by Friday',
   },
   {
     gmail_id: 'test_2_def456',
     sender: 'support@github.com',
     subject: 'Security Alert: New sign-in from Windows',
-    body: 'A new sign-in to your GitHub account was detected from Windows.',
-    snippet: 'A new sign-in to your GitHub account was detected...',
-    status: 'new',
-    category: 'security',
+    text: 'A new sign-in to your GitHub account was detected from Windows.',
+    status: 'to_do',
+    category: 'CUSTOMER_REQUEST',
     priority: 4,
+    reasoning: 'Security-related notification from trusted service. Requires verification of valid sign-in.',
+    action_required: 'Review security sign-in',
   },
   {
     gmail_id: 'test_3_ghi789',
     sender: 'team@asana.com',
     subject: 'You were assigned to: Complete Phase 3 UI',
-    body: 'You have been assigned a new task in Asana project.',
-    snippet: 'You have been assigned a new task in Asana...',
-    status: 'classified',
-    category: 'task',
+    text: 'You have been assigned a new task in Asana project.',
+    status: 'in_progress',
+    category: 'FOLLOW_UP',
     priority: 4,
+    reasoning: 'Task assignment notification. Work is already underway in development sprint.',
+    action_required: 'Complete Phase 3 UI development',
   },
   {
     gmail_id: 'test_4_jkl012',
     sender: 'newsletter@techcrunch.com',
     subject: 'Weekly Tech Digest: AI Breakthroughs',
-    body: 'This week in tech: major AI model releases and industry updates.',
-    snippet: 'This week in tech: major AI model releases...',
-    status: 'classified',
-    category: 'news',
+    text: 'This week in tech: major AI model releases and industry updates.',
+    status: 'to_do',
+    category: 'INTERNAL_UPDATE',
     priority: 2,
+    reasoning: 'Informational digest for general knowledge. No immediate action required.',
+    action_required: null,
   },
   {
     gmail_id: 'test_5_mno345',
     sender: 'boss@company.com',
     subject: 'Project Status Update Required',
-    body: 'Please provide a status update on the Gmail Assistant project by EOD today.',
-    snippet: 'Please provide a status update on the Gmail Assistant...',
+    text: 'Please provide a status update on the Gmail Assistant project by EOD today.',
     status: 'in_progress',
-    category: 'work',
+    category: 'URGENT_DECISION',
     priority: 5,
+    reasoning: 'Direct request from leadership with same-day deadline. High visibility project status.',
+    action_required: 'Send project status update to boss',
   },
   {
     gmail_id: 'test_6_pqr678',
     sender: 'system@aws.amazon.com',
     subject: 'AWS Billing Alert',
-    body: 'Your AWS usage this month has exceeded your budgeted amount.',
-    snippet: 'Your AWS usage this month has exceeded...',
+    text: 'Your AWS usage this month has exceeded your budgeted amount.',
     status: 'in_progress',
-    category: 'alert',
+    category: 'INVOICE',
     priority: 3,
+    reasoning: 'Cost management issue. Budget exceeded requires review and adjustment of infrastructure.',
+    action_required: 'Review AWS spending and adjust budget',
   },
   {
     gmail_id: 'test_7_stu901',
     sender: 'feedback@slack.com',
     subject: 'Your Slack Workspace is ready to upgrade',
-    body: 'Upgrade to Slack Pro for advanced features and better team collaboration.',
-    snippet: 'Upgrade to Slack Pro for advanced features...',
+    text: 'Upgrade to Slack Pro for advanced features and better team collaboration.',
     status: 'done',
-    category: 'marketing',
+    category: 'LOW_PRIORITY',
     priority: 1,
+    reasoning: 'Optional upgrade notification. Already reviewed and archived.',
+    action_required: null,
   },
 ];
 
 try {
   // Insert test emails with classifications and kanban items
   const insertEmail = db.prepare(`
-    INSERT INTO emails (gmail_id, sender, subject, body, snippet, received_at)
-    VALUES (?, ?, ?, ?, ?, datetime('now'))
+    INSERT INTO emails (gmail_id, sender, subject, text, received_at)
+    VALUES (?, ?, ?, ?, datetime('now'))
   `);
 
   const insertClassification = db.prepare(`
-    INSERT INTO classifications (email_id, category, priority, reasoning)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO classifications (email_id, category, priority, reasoning, action_required)
+    VALUES (?, ?, ?, ?, ?)
   `);
 
   const insertKanbanItem = db.prepare(`
@@ -98,15 +105,15 @@ try {
   `);
 
   testEmails.forEach((email) => {
-    const { status, category, priority, ...emailData } = email;
+    // Destructure email data
+    const { status, category, priority, reasoning, action_required, ...emailData } = email;
 
     // Insert email
     const emailResult = insertEmail.run(
       emailData.gmail_id,
       emailData.sender,
       emailData.subject,
-      emailData.body,
-      emailData.snippet
+      emailData.text
     );
 
     const emailId = emailResult.lastInsertRowid;
@@ -116,7 +123,8 @@ try {
       emailId,
       category,
       priority,
-      `Auto-classified as ${category} with priority ${priority}`
+      reasoning,
+      action_required
     );
 
     // Insert kanban item
