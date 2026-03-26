@@ -15,6 +15,15 @@ export async function POST(request: Request) {
     const { messageId, from, subject, text, category, priority, reasoning, action_required } =
       await request.json();
 
+    // Log the incoming request
+    console.log('📨 Classification Request Received:');
+    console.log('  messageId:', messageId);
+    console.log('  category:', category);
+    console.log('  priority:', priority);
+    console.log('  reasoning:', reasoning);
+    console.log('  action_required:', action_required);
+    console.log('  action_required type:', typeof action_required);
+
     if (!messageId || !category || priority === undefined || !reasoning) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -33,7 +42,7 @@ export async function POST(request: Request) {
     if (!emailId) {
       try {
         const result = db.prepare(`
-          INSERT INTO emails (gmail_id, sender, subject, body, received_at)
+          INSERT INTO emails (gmail_id, sender, subject, text, received_at)
           VALUES (?, ?, ?, ?, datetime('now'))
         `).run(messageId, from || 'unknown', subject || 'No subject', text || '');
 
@@ -42,7 +51,7 @@ export async function POST(request: Request) {
         // Create kanban_item
         db.prepare(`
           INSERT INTO kanban_items (email_id, status)
-          VALUES (?, 'new')
+          VALUES (?, 'to_do')
         `).run(emailId);
       } catch (dbError) {
         console.error('DB Insert Error:', dbError);
@@ -54,23 +63,20 @@ export async function POST(request: Request) {
     const existing = db.prepare('SELECT id FROM classifications WHERE email_id = ?').get(emailId);
 
     if (existing) {
+      console.log('🔄 Updating existing classification...');
       db.prepare(`
         UPDATE classifications 
         SET category = ?, priority = ?, reasoning = ?, action_required = ?
         WHERE email_id = ?
       `).run(category, priority, reasoning, action_required || null, emailId);
+      console.log('✅ Classification updated with action_required:', action_required || null);
     } else {
+      console.log('➕ Creating new classification...');
       db.prepare(`
         INSERT INTO classifications (email_id, category, priority, reasoning, action_required)
         VALUES (?, ?, ?, ?, ?)
       `).run(emailId, category, priority, reasoning, action_required || null);
-
-      // Update kanban status
-      db.prepare(`
-        UPDATE kanban_items 
-        SET status = 'classified'
-        WHERE email_id = ?
-      `).run(emailId);
+      console.log('✅ Classification created with action_required:', action_required || null);
     }
 
     db.close();
