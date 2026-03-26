@@ -61,3 +61,19 @@ export function getEmailStats() {
     GROUP BY k.status
   `).all();
 }
+
+export function deleteEmail(emailId: number): boolean {
+  const db = getDb();
+  try {
+    // Delete from kanban_items first (foreign key)
+    db.prepare('DELETE FROM kanban_items WHERE email_id = ?').run(emailId);
+    // Delete from classifications
+    db.prepare('DELETE FROM classifications WHERE email_id = ?').run(emailId);
+    // Delete from emails
+    const result = db.prepare('DELETE FROM emails WHERE id = ?').run(emailId);
+    return result.changes > 0;
+  } catch (err) {
+    console.error('Delete error:', err);
+    return false;
+  }
+}

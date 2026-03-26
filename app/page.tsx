@@ -50,7 +50,7 @@ function EmailCard({ email }: { email: Email }) {
         </div>
 
         {/* Category & Priority Badges */}
-        <div className="flex items-center gap-3 mb-3 pb-3 border-b-2" style={{ borderColor: 'rgba(0, 0, 0, 0.4)' }}>
+        <div className="flex items-center justify-between mb-3 pb-3 border-b-2" style={{ borderColor: 'rgba(0, 0, 0, 0.4)' }}>
           <span className="text-xs font-bold uppercase" style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
             Type: <span style={{ color: 'rgb(0, 0, 0)' }}>{email.category?.split('_').join(' ') || 'UNCLASSIFIED'}</span>
           </span>
@@ -128,6 +128,31 @@ function KanbanColumn({ status, emails }: { status: string; emails: Email[] }) {
   );
 }
 
+// Bin Drop Zone Component
+function BinDropZone() {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'bin',
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="p-4 rounded-lg border-2 transition-all"
+      style={{
+        borderColor: isOver ? 'rgb(220, 38, 38)' : 'rgba(0, 0, 0, 0.2)',
+        backgroundColor: isOver ? 'rgba(220, 38, 38, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+        minWidth: '120px',
+        textAlign: 'center',
+      }}
+    >
+      <div className="text-2xl mb-1">Trash</div>
+      <div className="text-xs" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+        Drag here to delete
+      </div>
+    </div>
+  );
+}
+
 // Main Page Component
 export default function Home() {
   const [emails, setEmails] = useState<Email[]>([]);
@@ -170,6 +195,30 @@ export default function Home() {
 
     const activeData = active.data.current;
     if (!activeData?.email) return;
+
+    // Check if dropped on bin
+    if (over.id === 'bin') {
+      // Remove from UI optimistically
+      setEmails((prev) => prev.filter((e) => e.id !== activeData.email.id));
+
+      // Delete from database
+      try {
+        const res = await fetch('/api/emails/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emailId: activeData.email.id }),
+        });
+
+        if (!res.ok) {
+          // Revert on error
+          await fetchEmails();
+        }
+      } catch (err) {
+        console.error('Failed to delete:', err);
+        await fetchEmails();
+      }
+      return;
+    }
 
     // Find which column we're dropping into
     // over.id could be either a column-${status} or an email-${id}
@@ -214,36 +263,41 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-6 bg-white">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Gmail Assistant</h1>
-        <p className="text-gray-600">Drag emails between columns to organize them</p>
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded text-red-700">
-          {error}
-        </div>
-      )}
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center h-96">
-          <div className="text-gray-600 text-lg" style={{ animation: 'pulse 2s infinite' }}>
-            Loading emails...
+      <DndContext
+        sensors={sensors}
+        collisionStrategy={closestCorners}
+        onDragEnd={handleDragEnd}
+        onDragStart={(event) => setActiveId(event.active.id.toString())}
+      >
+        {/* Header with Bin */}
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Gmail Assistant</h1>
+            <p className="text-gray-600">Drag emails between columns to organize them</p>
           </div>
+          
+          {/* Bin Drop Zone */}
+          <BinDropZone />
         </div>
-      )}
 
-      {/* Kanban Board */}
-      {!loading && (
-        <DndContext
-          sensors={sensors}
-          collisionStrategy={closestCorners}
-          onDragEnd={handleDragEnd}
-          onDragStart={(event) => setActiveId(event.active.id.toString())}
-        >
+        {/* Error Display */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="flex items-center justify-center h-96">
+            <div className="text-gray-600 text-lg" style={{ animation: 'pulse 2s infinite' }}>
+              Loading emails...
+            </div>
+          </div>
+        )}
+
+        {/* Kanban Board */}
+        {!loading && (
           <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {STATUS_ORDER.map((status) => (
               <KanbanColumn
@@ -253,19 +307,19 @@ export default function Home() {
               />
             ))}
           </div>
+        )}
 
-          <DragOverlay>
-            {activeId ? (
-              <div
-                className="opacity-50 bg-white p-4 rounded-lg shadow-2xl border-l-4 border-blue-500 border border-gray-300"
-                style={{ width: '320px' }}
-              >
-                <span className="text-gray-700 font-medium">Being dragged...</span>
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      )}
+        <DragOverlay>
+          {activeId ? (
+            <div
+              className="opacity-50 bg-white p-4 rounded-lg shadow-2xl border-l-4 border-blue-500 border border-gray-300"
+              style={{ width: '320px' }}
+            >
+              <span className="text-gray-700 font-medium">Being dragged...</span>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       <style jsx>{`
         @keyframes pulse {
