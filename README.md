@@ -450,80 +450,11 @@ Test emails include various categories and priorities to showcase the system.
 
 ---
 
-## Deployment
-
-### Option 1: Vercel (Recommended for Next.js)
-```bash
-npm install -g vercel
-vercel
-```
-
-### Option 2: Traditional Node Server
-```bash
-npm run build
-npm start
-```
-
-### Option 3: Docker
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-CMD ["npm", "start"]
-```
-
----
-
-## Troubleshooting
-
-### Emails not appearing
-- Check n8n workflow is running
-- Verify webhook URL is correct in n8n
-- Check database: `sqlite3 gmail_assistant.db "SELECT * FROM emails;"`
-- Verify API is responding: `curl http://localhost:3000/api/emails`
-
-### Drag-drop not working
-- Ensure dev server is running (`npm run dev`)
-- Check browser console for errors
-- Clear cache and refresh browser
-
-### Database errors
-- Reset database: `rm gmail_assistant.db && node scripts/init-db.js`
-- Check permissions on database file
-- Ensure better-sqlite3 is installed: `npm install better-sqlite3`
-
-### AI classification not working in n8n
-- Verify LLM API key is configured
-- Check n8n logs for errors
-- Ensure prompt is formatted correctly (JSON only)
-- Test with simpler email first
-
----
-
-## 📝 Development Notes
-
-### Adding New Categories
-Edit `lib/types.ts` and update:
-1. Email type union
-2. n8n prompt
-3. CATEGORY_COLORS mapping
-
-### Modifying Card Layout
-Edit `app/page.tsx` EmailCard component - structure is in the first 100 lines.
-
-### Changing Status Workflow
-Edit `lib/types.ts` -> `STATUS_ORDER` constant and update column count in app.
-
----
-
 ## License
 ISC
 
 ## Author
-Suman (GVSumanth1)
+Sumanth (GVSumanth1)
 
 ---
 
