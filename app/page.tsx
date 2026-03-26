@@ -9,11 +9,12 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Email, CATEGORY_COLORS, STATUS_LABELS, STATUS_ORDER } from '@/lib/types';
+import { Email, CATEGORY_COLORS, PRIORITY_COLORS, STATUS_LABELS, STATUS_ORDER } from '@/lib/types';
 
 // EmailCard Component
 function EmailCard({ email }: { email: Email }) {
@@ -26,6 +27,7 @@ function EmailCard({ email }: { email: Email }) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    backgroundColor: PRIORITY_COLORS[email.priority || 1] || PRIORITY_COLORS[1],
   };
 
   const categoryColor = CATEGORY_COLORS[email.category || 'LOW_PRIORITY'];
@@ -36,37 +38,53 @@ function EmailCard({ email }: { email: Email }) {
       style={style}
       {...attributes}
       {...listeners}
-      className="p-4 rounded-lg bg-gray-700 border-l-4 cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition-shadow"
+      className="p-4 rounded-lg cursor-grab active:cursor-grabbing shadow-md hover:shadow-lg transition-shadow border-l-4"
       onMouseDown={(e) => e.preventDefault()}
     >
-      <div style={{ borderColor: categoryColor }}>
-        {/* Category Badge */}
-        <div className="flex items-center gap-2 mb-2">
-          <span
-            className="px-2 py-1 rounded text-xs font-bold text-white"
-            style={{ backgroundColor: categoryColor }}
-          >
-            {email.category?.split('_').join(' ') || 'UNCLASSIFIED'}
+      <div style={{ borderColor: 'rgba(0, 0, 0, 0.2)' }}>
+        {/* Subject Line - MAIN HEADING - Prominent Segment */}
+        <div className="mb-4 p-3 rounded border-2" style={{ borderColor: 'rgba(0, 0, 0, 0.3)', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+          <div className="font-bold text-lg line-clamp-2" style={{ color: 'rgb(0, 0, 0)' }}>
+            {email.subject}
+          </div>
+        </div>
+
+        {/* Category & Priority Badges */}
+        <div className="flex items-center gap-3 mb-3 pb-3 border-b-2" style={{ borderColor: 'rgba(0, 0, 0, 0.4)' }}>
+          <span className="text-xs font-bold uppercase" style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
+            Type: <span style={{ color: 'rgb(0, 0, 0)' }}>{email.category?.split('_').join(' ') || 'UNCLASSIFIED'}</span>
           </span>
           {email.priority && (
-            <span className="text-xs text-yellow-300">{'⭐'.repeat(email.priority)}</span>
+            <span className="text-xs font-bold uppercase" style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
+              Priority: <span style={{ color: 'rgb(0, 0, 0)' }}>P{email.priority}</span>
+            </span>
           )}
         </div>
 
-        {/* Subject */}
-        <div className="font-semibold text-white text-sm line-clamp-2 mb-2">
-          {email.subject}
-        </div>
-
         {/* Sender */}
-        <div className="text-xs text-gray-300 mb-2">
-          <span className="font-medium">From:</span> {email.sender.split('@')[0]}
+        <div className="mb-3 pb-3 border-b-2" style={{ borderColor: 'rgba(0, 0, 0, 0.2)' }}>
+          <div className="text-xs" style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
+            <span className="font-bold uppercase">From:</span> <span style={{ color: 'rgb(0, 0, 0)' }}>{email.sender.split('@')[0]}</span>
+          </div>
         </div>
 
-        {/* Snippet */}
-        <div className="text-xs text-gray-400 line-clamp-2">
-          {email.snippet || 'No preview'}
+        {/* Analysis / Reasoning */}
+        <div className="mb-3 pb-3 border-b-2" style={{ borderColor: 'rgba(0, 0, 0, 0.2)' }}>
+          <div className="text-xs font-bold uppercase mb-1" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Analysis:</div>
+          <div className="text-xs line-clamp-2" style={{ color: 'rgb(0, 0, 0)' }}>
+            {email.reasoning || 'No analysis available'}
+          </div>
         </div>
+
+        {/* Action Required */}
+        {email.action_required && (
+          <div className="mt-4 p-3 rounded border-2" style={{ borderColor: 'rgba(0, 0, 0, 0.3)', backgroundColor: 'rgba(255, 255, 255, 0.9)' }}>
+            <div className="text-xs font-bold uppercase mb-1" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Action Required:</div>
+            <div className="text-sm font-medium" style={{ color: 'rgb(0, 0, 0)' }}>
+              {email.action_required}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -74,22 +92,22 @@ function EmailCard({ email }: { email: Email }) {
 
 // Column Component
 function KanbanColumn({ status, emails }: { status: string; emails: Email[] }) {
-  const { setNodeRef } = useSortable({
+  const { setNodeRef } = useDroppable({
     id: `column-${status}`,
   });
 
   return (
     <div
       ref={setNodeRef}
-      className="bg-gray-700/50 rounded-xl shadow-xl overflow-hidden flex flex-col border border-gray-600"
+      className="bg-gray-50 rounded-lg overflow-hidden flex flex-col border border-gray-300 shadow-sm"
       style={{ height: 'calc(100vh - 200px)' }}
     >
       {/* Header */}
-      <div className="bg-gray-800 p-4 border-b border-gray-600">
-        <h2 className="font-bold text-white text-lg">
+      <div className="bg-white p-4 border-b border-gray-200">
+        <h2 className="font-bold text-gray-900 text-lg">
           {STATUS_LABELS[status as keyof typeof STATUS_LABELS]}
         </h2>
-        <span className="text-sm text-gray-400 mt-1 block">
+        <span className="text-sm text-gray-600 mt-1 block">
           {emails.length} item{emails.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -100,7 +118,9 @@ function KanbanColumn({ status, emails }: { status: string; emails: Email[] }) {
           {emails.length === 0 ? (
             <div className="text-center text-gray-500 text-sm py-8">No emails</div>
           ) : (
-            emails.map((email) => <EmailCard key={email.id} email={email} />)
+            emails.map((email) => (
+              <EmailCard key={email.id} email={email} />
+            ))
           )}
         </SortableContext>
       </div>
@@ -151,7 +171,24 @@ export default function Home() {
     const activeData = active.data.current;
     if (!activeData?.email) return;
 
-    const newStatus = over.id.toString().replace('column-', '');
+    // Find which column we're dropping into
+    // over.id could be either a column-${status} or an email-${id}
+    let newStatus: string;
+    
+    if (over.id.toString().startsWith('column-')) {
+      // Direct drop on column
+      newStatus = over.id.toString().replace('column-', '');
+    } else if (over.id.toString().startsWith('email-')) {
+      // Drop on an email card - need to find its parent column
+      const targetEmail = emails.find((e) => e.id === parseInt(over.id.toString().replace('email-', ''), 10));
+      if (!targetEmail) return;
+      newStatus = targetEmail.status;
+    } else {
+      return;
+    }
+
+    // Don't update if dropping in same column
+    if (newStatus === activeData.email.status) return;
 
     // Optimistic update
     setEmails((prev) =>
@@ -176,16 +213,16 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ background: 'linear-gradient(to bottom right, #111827, #1f2937, #111827)' }}>
+    <div className="min-h-screen p-6 bg-white">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">Gmail Assistant</h1>
-        <p className="text-gray-400">Drag emails between columns to organize them</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Gmail Assistant</h1>
+        <p className="text-gray-600">Drag emails between columns to organize them</p>
       </div>
 
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-600 rounded text-red-300">
+        <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded text-red-700">
           {error}
         </div>
       )}
@@ -193,7 +230,7 @@ export default function Home() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-400 text-lg" style={{ animation: 'pulse 2s infinite' }}>
+          <div className="text-gray-600 text-lg" style={{ animation: 'pulse 2s infinite' }}>
             Loading emails...
           </div>
         </div>
@@ -207,7 +244,7 @@ export default function Home() {
           onDragEnd={handleDragEnd}
           onDragStart={(event) => setActiveId(event.active.id.toString())}
         >
-          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {STATUS_ORDER.map((status) => (
               <KanbanColumn
                 key={status}
@@ -220,10 +257,10 @@ export default function Home() {
           <DragOverlay>
             {activeId ? (
               <div
-                className="opacity-50 bg-gray-700 p-4 rounded-lg shadow-2xl border-l-4 border-red-500"
+                className="opacity-50 bg-white p-4 rounded-lg shadow-2xl border-l-4 border-blue-500 border border-gray-300"
                 style={{ width: '320px' }}
               >
-                Being dragged...
+                <span className="text-gray-700 font-medium">Being dragged...</span>
               </div>
             ) : null}
           </DragOverlay>
