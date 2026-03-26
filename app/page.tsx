@@ -137,24 +137,29 @@ function BinDropZone() {
   return (
     <div
       ref={setNodeRef}
-      className="absolute top-0 right-0 transition-all"
       style={{
-        width: '120px',
-        height: '120px',
+        position: 'fixed',
+        top: '24px',
+        right: '24px',
+        width: '100px',
+        height: '100px',
         borderRadius: '12px',
         borderWidth: '2px',
-        borderColor: isOver ? 'rgb(0, 0, 0)' : 'rgba(0, 0, 0, 0.15)',
-        backgroundColor: isOver ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.05)',
+        borderColor: isOver ? 'rgb(0, 0, 0)' : 'rgba(0, 0, 0, 0.2)',
+        backgroundColor: isOver ? 'rgb(240, 240, 240)' : 'rgb(255, 255, 255)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
+        zIndex: 50,
+        transition: 'all 0.2s ease',
       }}
     >
       <div 
-        className="text-5xl mb-1"
         style={{
+          fontSize: '2.5rem',
+          marginBottom: '0.25rem',
           filter: isOver ? 'scale(1.1)' : 'scale(1)',
           transition: 'filter 0.2s',
           color: 'rgb(0, 0, 0)',
@@ -162,8 +167,8 @@ function BinDropZone() {
       >
         Bin
       </div>
-      <div className="text-xs font-semibold" style={{ color: isOver ? 'rgb(0, 0, 0)' : 'rgba(0, 0, 0, 0.5)' }}>
-        DROP HERE
+      <div style={{ fontSize: '0.65rem', fontWeight: 600, color: isOver ? 'rgb(0, 0, 0)' : 'rgba(0, 0, 0, 0.5)' }}>
+        DROP
       </div>
     </div>
   );
