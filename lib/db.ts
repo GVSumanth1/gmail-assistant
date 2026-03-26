@@ -17,18 +17,19 @@ export type Email = {
   gmail_id: string;
   sender: string;
   subject: string;
-  snippet: string;
+  text?: string;
   category?: string;
   priority?: number;
   reasoning?: string;
-  status: 'new' | 'classified' | 'in_progress' | 'done';
+  action_required?: string;
+  status: 'to_do' | 'in_progress' | 'done';
 };
 
 export function getAllEmails(): Email[] {
   const db = getDb();
   return db.prepare(`
     SELECT 
-      e.id, e.gmail_id, e.sender, e.subject, e.snippet,
+      e.id, e.gmail_id, e.sender, e.subject, e.text,
       c.category, c.priority, c.reasoning, c.action_required,
       k.status
     FROM emails e

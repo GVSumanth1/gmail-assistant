@@ -3,8 +3,7 @@ CREATE TABLE IF NOT EXISTS emails (
   gmail_id TEXT UNIQUE NOT NULL,
   sender TEXT NOT NULL,
   subject TEXT NOT NULL,
-  body TEXT,
-  snippet TEXT,
+  text TEXT,
   received_at DATETIME,
   fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -23,7 +22,7 @@ CREATE TABLE IF NOT EXISTS classifications (
 CREATE TABLE IF NOT EXISTS kanban_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email_id INTEGER NOT NULL UNIQUE,
-  status TEXT DEFAULT 'new' CHECK(status IN ('new', 'classified', 'in_progress', 'done')),
+  status TEXT DEFAULT 'to_do' CHECK(status IN ('to_do', 'in_progress', 'done')),
   user_notes TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
