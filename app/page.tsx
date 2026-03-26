@@ -143,8 +143,8 @@ function BinDropZone() {
         height: '120px',
         borderRadius: '12px',
         borderWidth: '2px',
-        borderColor: isOver ? 'rgb(220, 38, 38)' : 'rgba(0, 0, 0, 0.15)',
-        backgroundColor: isOver ? 'rgba(220, 38, 38, 0.15)' : 'rgba(220, 38, 38, 0.05)',
+        borderColor: isOver ? 'rgb(0, 0, 0)' : 'rgba(0, 0, 0, 0.15)',
+        backgroundColor: isOver ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.05)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -157,11 +157,12 @@ function BinDropZone() {
         style={{
           filter: isOver ? 'scale(1.1)' : 'scale(1)',
           transition: 'filter 0.2s',
+          color: 'rgb(0, 0, 0)',
         }}
       >
-        Delete
+        Bin
       </div>
-      <div className="text-xs font-semibold" style={{ color: isOver ? 'rgb(220, 38, 38)' : 'rgba(0, 0, 0, 0.5)' }}>
+      <div className="text-xs font-semibold" style={{ color: isOver ? 'rgb(0, 0, 0)' : 'rgba(0, 0, 0, 0.5)' }}>
         DROP HERE
       </div>
     </div>
