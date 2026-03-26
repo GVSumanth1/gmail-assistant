@@ -137,17 +137,32 @@ function BinDropZone() {
   return (
     <div
       ref={setNodeRef}
-      className="p-4 rounded-lg border-2 transition-all"
+      className="absolute top-0 right-0 transition-all"
       style={{
-        borderColor: isOver ? 'rgb(220, 38, 38)' : 'rgba(0, 0, 0, 0.2)',
-        backgroundColor: isOver ? 'rgba(220, 38, 38, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-        minWidth: '120px',
-        textAlign: 'center',
+        width: '120px',
+        height: '120px',
+        borderRadius: '12px',
+        borderWidth: '2px',
+        borderColor: isOver ? 'rgb(220, 38, 38)' : 'rgba(0, 0, 0, 0.15)',
+        backgroundColor: isOver ? 'rgba(220, 38, 38, 0.15)' : 'rgba(220, 38, 38, 0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
       }}
     >
-      <div className="text-2xl mb-1">Trash</div>
-      <div className="text-xs" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
-        Drag here to delete
+      <div 
+        className="text-5xl mb-1"
+        style={{
+          filter: isOver ? 'scale(1.1)' : 'scale(1)',
+          transition: 'filter 0.2s',
+        }}
+      >
+        Delete
+      </div>
+      <div className="text-xs font-semibold" style={{ color: isOver ? 'rgb(220, 38, 38)' : 'rgba(0, 0, 0, 0.5)' }}>
+        DROP HERE
       </div>
     </div>
   );
@@ -270,13 +285,13 @@ export default function Home() {
         onDragStart={(event) => setActiveId(event.active.id.toString())}
       >
         {/* Header with Bin */}
-        <div className="mb-8 flex justify-between items-start">
+        <div className="mb-8 relative">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Gmail Assistant</h1>
             <p className="text-gray-600">Drag emails between columns to organize them</p>
           </div>
           
-          {/* Bin Drop Zone */}
+          {/* Bin Drop Zone - Top Right */}
           <BinDropZone />
         </div>
 
